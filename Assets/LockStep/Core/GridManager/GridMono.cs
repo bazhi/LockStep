@@ -15,7 +15,6 @@ namespace LockStep.Mono
 			}
 		}
 
-
 		[SerializeField]
 		private int _mapWidth = 100;
 
@@ -30,6 +29,9 @@ namespace LockStep.Mono
 		private bool _useDiagonalConnections = true;
 
 		public bool UseDiagonalConnetions { get { return _useDiagonalConnections; } }
+
+		FastList<Vector2d> m_FindPath;
+		Vector2d StartPos;
 
 		void Start()
 		{
@@ -46,7 +48,18 @@ namespace LockStep.Mono
 		{
 			GridManager.Settings = new GridSettings(this.MapWidth, this.MapHeight, this.Offset.x, this.Offset.y, this.UseDiagonalConnetions);
 			GridManager.Initialize();
+			GridManager.GetNode(5, 3).AddObstacle();
 			GridManager.GetNode(4, 4).AddObstacle();
+			GridManager.GetNode(3, 4).AddObstacle();
+			GridManager.GetNode(2, 4).AddObstacle();
+			GridManager.GetNode(4, 6).AddObstacle();
+			m_FindPath = new FastList<Vector2d>();
+			StartPos = new Vector2d(FixedMath.Create(-4), FixedMath.Create(-4));
+			if (Pathfinder.FindPath(StartPos, new Vector2d(FixedMath.Create(4), FixedMath.Create(4)), m_FindPath)) {
+				Debug.Log("find Path");
+			} else {
+				Debug.Log("can not find path");
+			}
 		}
 
 		#if UNITY_EDITOR
@@ -74,6 +87,17 @@ namespace LockStep.Mono
 						}
 					}
 					Gizmos.DrawCube(drawPos, scale);
+				}
+			}
+			Vector3 lastPos = StartPos.ToVector3(this.transform.position.y);
+			if (Application.isPlaying) {
+				Gizmos.color = Color.yellow;
+				int count = m_FindPath.Count;
+				for (int i = 0; i < count; ++i) {
+					var node = m_FindPath[i];
+					var drawPos = node.ToVector3(this.transform.position.y);
+					Gizmos.DrawLine(lastPos, drawPos);
+					lastPos = drawPos;
 				}
 			}
 		}
