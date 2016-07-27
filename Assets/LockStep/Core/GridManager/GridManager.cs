@@ -34,6 +34,7 @@ namespace Lockstep
 			}
 			set {
 				_settings = value;
+				Debug.Log("GridSettings Changed");
 				_settingsChanged = true;
 			}
 		}
