@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.Serialization;
+using System.ComponentModel;
 
 namespace Lockstep.Mono
 {
@@ -19,23 +20,12 @@ namespace Lockstep.Mono
 
 		public BoundingType Shape { get { return _shape; } }
 
-		[SerializeField,FixedNumber, FormerlySerializedAs("Radius")]
+
 		private long _radius = FixedMath.Half;
+		private Vector3d _ABSize = new Vector3d(Vector3.one);
 
-		[SerializeField,FixedNumber, FormerlySerializedAs("HalfWidth")]
-		private long _halfWidth = FixedMath.Half;
-
-		public long HalfWidth { get { return _halfWidth; } }
-
-		[SerializeField,FixedNumber, FormerlySerializedAs("HalfHeight")]
-		public long _halfHeight = FixedMath.Half;
-
-		public long Radius { get { return _radius; } }
-
-		[SerializeField, FormerlySerializedAs("Vertices")]
-		private Vector2d[] _vertices;
-
-		public Vector2d[] Vertices { get { return _vertices; } }
+		public float Radius = 1.0f;
+		public Vector3 ABSize = Vector3.one;
 
 		public bool Movable;
 
@@ -53,6 +43,9 @@ namespace Lockstep.Mono
 		public void Initialize()
 		{
 			_position = new Vector2d(transform.position.x, transform.position.z);
+			_radius = FixedMath.Create(Radius);
+			_ABSize.x = FixedMath.Create(ABSize.x);
+			_ABSize.z = FixedMath.Create(ABSize.z);
 			BuildBounds();
 		}
 
@@ -69,12 +62,15 @@ namespace Lockstep.Mono
 		public void BuildBounds()
 		{
 			if (Shape == BoundingType.Circle) {
-				XMin = -Radius + _position.x;
-				XMax = Radius + _position.x;
-				YMin = -Radius + _position.y;
-				YMax = Radius + _position.y;
+				XMin = -_radius + _position.x;
+				XMax = _radius + _position.x;
+				YMin = -_radius + _position.y;
+				YMax = _radius + _position.y;
 			} else if (Shape == BoundingType.AABox) {
-
+				XMin = -_ABSize.x / 2 + _position.x;
+				XMax = _ABSize.x / 2 + _position.x;
+				YMin = -_ABSize.z / 2 + _position.y;
+				YMax = _ABSize.z / 2 + _position.y;
 			} else if (Shape == BoundingType.Polygon) {
 
 			}
@@ -87,12 +83,18 @@ namespace Lockstep.Mono
 
 			long xmax = GetCeiledSnap(this.XMax + FixedMath.Half - xmin, snapSpacing) + xmin;
 			long ymax = GetCeiledSnap(this.YMax + FixedMath.Half - ymin, snapSpacing) + ymin;
+			//Debug.LogFormat("xmin{0:F}, ymin{1:F}, xmax{2:F}, ymax{3:F}", XMin.ToFloat(), YMin.ToFloat(), XMax.ToFloat(), YMax.ToFloat());
+			//Debug.LogFormat("xmin{0:F}, ymin{1:F}, xmax{2:F}, ymax{3:F}", xmin.ToFloat(), ymin.ToFloat(), xmax.ToFloat(), ymax.ToFloat());
 			//Used for getting snapped positions this body covered
 			for (long x = xmin; x < xmax; x += snapSpacing) {
 				for (long y = ymin; y < ymax; y += snapSpacing) {
 					Vector2d checkPos = new Vector2d(x, y);
+
 					if (IsPositionCovered(checkPos)) {
 						output.Add(checkPos);
+						//Debug.Log(checkPos.ToString());
+					} else {
+						//Debug.Log(checkPos.ToString() + "unAdd");
 					}
 				}
 			}
@@ -102,7 +104,7 @@ namespace Lockstep.Mono
 		{
 			switch (this.Shape) {
 				case BoundingType.Circle:
-					long maxDistance = this.Radius + FixedMath.Half;
+					long maxDistance = this._radius + FixedMath.Half;
 					maxDistance *= maxDistance;
 					if ((_position - position).FastMagnitude() > maxDistance)
 						return false;
@@ -110,11 +112,9 @@ namespace Lockstep.Mono
 				case BoundingType.AABox:
 					return position.x + FixedMath.Half >= this.XMin && position.x - FixedMath.Half <= this.XMax
 					&& position.y + FixedMath.Half >= this.YMin && position.y - FixedMath.Half <= this.YMax;
-					break;
 				case BoundingType.Polygon:
 					break;
 			}
-
 
 			return false;
 		}
@@ -124,13 +124,13 @@ namespace Lockstep.Mono
 			Gizmos.color = Color.red;
 			switch (this.Shape) {
 				case BoundingType.Circle:
-					Gizmos.DrawWireSphere(this.transform.position, this.Radius.ToFloat());
+					Gizmos.DrawWireSphere(this.transform.position, this.Radius);
 					break;
 				case BoundingType.AABox:
-					Gizmos.DrawWireSphere(this.transform.position, this.Radius.ToFloat());
+					Gizmos.DrawWireCube(this.transform.position, ABSize);
 					break;
 				case BoundingType.Polygon:
-					Gizmos.DrawWireSphere(this.transform.position, this.Radius.ToFloat());
+					Gizmos.DrawWireSphere(this.transform.position, this.Radius);
 					break;
 			}
 		}

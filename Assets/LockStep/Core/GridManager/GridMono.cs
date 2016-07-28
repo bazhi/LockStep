@@ -50,8 +50,8 @@ namespace Lockstep.Mono
 		void showPath()
 		{
 			m_FindPath = new FastList<Vector2d>();
-			StartPos = new Vector2d(FixedMath.Create(-4), FixedMath.Create(-4));
-			if (Pathfinder.FindPath(StartPos, new Vector2d(FixedMath.Create(4), FixedMath.Create(4)), m_FindPath)) {
+			StartPos = new Vector2d(FixedMath.Create(-49), FixedMath.Create(-49));
+			if (Pathfinder.FindPath(StartPos, new Vector2d(FixedMath.Create(49), FixedMath.Create(49)), m_FindPath)) {
 				Debug.Log("find Path");
 			} else {
 				Debug.Log("can not find path");

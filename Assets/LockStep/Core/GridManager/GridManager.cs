@@ -9,6 +9,8 @@ namespace Lockstep
 	{
 		public const int DefaultCapacity = 64 * 64;
 
+		public static long Spacing = FixedMath.One;
+
 		public static int Width { get; private set; }
 
 		public static int Height { get; private set; }

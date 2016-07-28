@@ -21,9 +21,8 @@ namespace Lockstep.Mono
 			base.OnLateInitialize();
 			CachedBody = GetComponent<BoundingBox>();
 			if (CachedBody.IsNotNull()) {
-				const long gridSpacing = FixedMath.One;
 				bufferCoordinates.FastClear();
-				CachedBody.GetCoveredSnappedPositions(gridSpacing, bufferCoordinates);
+				CachedBody.GetCoveredSnappedPositions(GridManager.Spacing, bufferCoordinates);
 				foreach (Vector2d vec in bufferCoordinates) {
 					GridNode node = GridManager.GetNode(vec.x, vec.y);
 					if (node == null) {
