@@ -5,13 +5,36 @@ namespace Lockstep
 {
 	public class FixedAABB2D
 	{
-		private long XMin { get; private set; }
+		private long XMin;
 
-		private long XMax { get; private set; }
+		private long XMax;
 
-		private long YMin { get; private set; }
+		private long YMin;
 
-		private long YMax { get; private set; }
+		private long YMax;
+
+		private void init (Vector2d center, long halfx, long halfy)
+		{
+			XMin = center.x - halfx;
+			XMax = center.x + halfx;
+			YMin = center.y - halfy;
+			YMax = center.y + halfy;
+		}
+
+		public FixedAABB2D (Vector2d center, long halfx, long halfy)
+		{
+			init (center, halfx, halfy);
+		}
+
+		public FixedAABB2D (Vector2 center, float halfx, float halfy)
+		{
+			init (Vector2d (center), FixedMath.Create (halfx), FixedMath.Create (halfy));
+		}
+
+		public void update (Vector2 center, float halfx, float halfy)
+		{
+			init (Vector2d (center), FixedMath.Create (halfx), FixedMath.Create (halfy));
+		}
 
 		public bool contains (Vector2d p)
 		{
