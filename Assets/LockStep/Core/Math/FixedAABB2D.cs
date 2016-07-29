@@ -28,12 +28,12 @@ namespace Lockstep
 
 		public FixedAABB2D (Vector2 center, float halfx, float halfy)
 		{
-			init (Vector2d (center), FixedMath.Create (halfx), FixedMath.Create (halfy));
+			init (new Vector2d (center), FixedMath.Create (halfx), FixedMath.Create (halfy));
 		}
 
 		public void update (Vector2 center, float halfx, float halfy)
 		{
-			init (Vector2d (center), FixedMath.Create (halfx), FixedMath.Create (halfy));
+			init (new Vector2d (center), FixedMath.Create (halfx), FixedMath.Create (halfy));
 		}
 
 		public bool contains (Vector2d p)
