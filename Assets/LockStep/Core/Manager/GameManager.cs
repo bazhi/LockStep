@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using Lockstep.Mono;
+using System.Diagnostics;
 
 namespace Lockstep
 {
@@ -11,11 +12,15 @@ namespace Lockstep
 		public GameObject m_SaverObject;
 		public GameObject m_MapObject;
 
+		[HideInInspector]
 		public EnvironmentSaver[] m_Savers;
-
+		[HideInInspector]
 		public BoundingBox[] m_Boundings;
+		[HideInInspector]
+		public Blocker[] m_Blockers;
 
-		public EnvironmentObject[] m_Enviroments;
+		[HideInInspector]
+		public DynamicBlocker[] m_DynamicBlockers;
 
 		protected void Start()
 		{
@@ -34,14 +39,21 @@ namespace Lockstep
 				box.Initialize();
 			}
 
-			foreach (var obj in m_Enviroments) {
+			foreach (var obj in m_Blockers) {
 				obj.Initialize();
 			}
 
-			foreach (var obj in m_Enviroments) {
+			foreach (var obj in m_DynamicBlockers) {
+				obj.Initialize();
+			}
+
+			foreach (var obj in m_Blockers) {
 				obj.LateInitialize();
 			}
 
+			foreach (var obj in m_DynamicBlockers) {
+				obj.LateInitialize();
+			}
 		}
 
 		public void LoadSavers()
@@ -51,7 +63,15 @@ namespace Lockstep
 			}
 			if (m_MapObject.IsNotNull()) {
 				m_Boundings = m_MapObject.GetComponentsInChildren<BoundingBox>();
-				m_Enviroments = m_MapObject.GetComponentsInChildren<EnvironmentObject>();
+				m_Blockers = m_MapObject.GetComponentsInChildren<Blocker>();
+				m_DynamicBlockers = m_MapObject.GetComponentsInChildren<DynamicBlocker>();
+			}
+		}
+
+		public void FixedUpdate()
+		{
+			foreach (var obj in m_DynamicBlockers) {
+				obj.Simulate();
 			}
 		}
 	}

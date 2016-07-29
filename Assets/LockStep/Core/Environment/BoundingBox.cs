@@ -27,8 +27,6 @@ namespace Lockstep.Mono
 		public float Radius = 1.0f;
 		public Vector3 ABSize = Vector3.one;
 
-		public bool Movable;
-
 		public long XMin { get; private set; }
 
 		public long XMax { get; private set; }
@@ -37,8 +35,7 @@ namespace Lockstep.Mono
 
 		public long YMax { get; private set; }
 
-		[SerializeField] //For inspector debugging
-        internal Vector2d _position;
+		private Vector2d _position;
 
 		public void Initialize()
 		{
@@ -74,6 +71,12 @@ namespace Lockstep.Mono
 			} else if (Shape == BoundingType.Polygon) {
 
 			}
+		}
+
+		public void UpdateValues()
+		{
+			_position = new Vector2d(transform.position.x, transform.position.z);
+			BuildBounds();
 		}
 
 		public void GetCoveredSnappedPositions(long snapSpacing, FastList<Vector2d> output)
