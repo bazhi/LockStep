@@ -26,6 +26,8 @@ namespace Lockstep.Mono
 		public float Radius = 1.0f;
 		public Vector3 ABSize = Vector3.one;
 
+		public FixedAABB2D m_AABB;
+
 		public long XMin { get; private set; }
 
 		public long XMax { get; private set; }
@@ -60,6 +62,7 @@ namespace Lockstep.Mono
 			Collider[] cols = GetComponentsInChildren <Collider> ();
 			foreach (var col in cols) {
 				Debug.Log (col.bounds.ToString ());
+				m_AABB.update (col.bounds.center.x, col.bounds.center.y, col.bounds.extents.x, col.bounds.extents.z);
 			}
 		}
 
