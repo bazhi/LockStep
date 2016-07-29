@@ -87,6 +87,7 @@ namespace Lockstep.Mono
 		{
 			_position = new Vector2d (transform.position.x, transform.position.z);
 			BuildBounds ();
+			m_AABB.update (transform.position.x, transform.position.z);
 		}
 
 		public void GetCoveredSnappedPositions (long snapSpacing, FastList<Vector2d> output)
