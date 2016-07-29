@@ -56,6 +56,11 @@ namespace Lockstep
 		{
 			if (!GetPathNodes(Start.x, Start.y, End.x, End.y, out node1, out node2))
 				return false;
+			if (!NeedsPath(node1, node2, unitSize)) {
+				outputVectorPath.Add(node2.WorldPos);
+				return true;
+			}
+
 			if (FindPath(node1, node2, OutputPath, unitSize)) {
 				outputVectorPath.FastClear();
 				length = OutputPath.Count;
@@ -302,6 +307,10 @@ namespace Lockstep
 		public static bool GetPathNodes(long StartX, long StartY, long EndX, long EndY, out GridNode startNode, out GridNode endNode)
 		{
 			startNode = GridManager.GetNode(StartX, StartY);
+			if (startNode.IsNull()) {
+				endNode = null;
+				return false;
+			}
 			if (startNode.Unwalkable) {
 				for (i = 0; i < 8; i++) {
 					currentNode = startNode.NeighborNodes[i];
@@ -316,6 +325,9 @@ namespace Lockstep
 				}
 			}
 			endNode = GridManager.GetNode(EndX, EndY);
+			if (endNode.IsNull()) {
+				return false;
+			}
 			if (endNode.Unwalkable) {
 				for (i = 0; i < 8; i++) {
 					currentNode = endNode.NeighborNodes[i];

@@ -17,6 +17,22 @@ namespace Lockstep.Mono
 
 		}
 
+		public void RemoveAllCoordinates()
+		{
+			for (int i = 0; i < LastCoordinates.Count; i++) {
+				GridNode node = LastCoordinates[i];
+				node.RemoveObstacle();
+			}
+		}
+
+		public void ReAddAllCoordinates()
+		{
+			for (int i = 0; i < LastCoordinates.Count; i++) {
+				GridNode node = LastCoordinates[i];
+				node.AddObstacle();
+			}
+		}
+
 
 		private void RemoveLastCoordinates()
 		{
@@ -36,7 +52,7 @@ namespace Lockstep.Mono
 				foreach (Vector2d vec in bufferCoordinates) {
 					GridNode node = GridManager.GetNode(vec.x, vec.y);
 					if (node == null) {
-						Debug.Log("GridManager getNode Null");
+						//Debug.Log("GridManager getNode Null");
 						continue;
 					}
 

@@ -16,8 +16,8 @@ namespace Lockstep
 			if (GUILayout.Button("Load Savers")) {
                 
 				saver.LoadSavers();
-				EditorUtility.SetDirty(target);
-				serializedObject.Update();
+//				EditorUtility.SetDirty(target);
+//				serializedObject.Update();
 			}
 
 		}
