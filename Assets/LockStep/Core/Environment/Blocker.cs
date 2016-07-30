@@ -10,6 +10,10 @@ namespace Lockstep.Mono
 
 		public BoundingBox CachedBody { get; private set; }
 
+		#if DEBUG
+		public bool m_bLog = false;
+		#endif
+
 		protected override void OnInitialize()
 		{
 
@@ -25,11 +29,15 @@ namespace Lockstep.Mono
 				CachedBody.GetCoveredSnappedPositions(GridManager.Spacing, bufferCoordinates);
 				foreach (Vector2d vec in bufferCoordinates) {
 					GridNode node = GridManager.GetNode(vec.x, vec.y);
-					if (node == null) {
-						continue;
+					if (node.IsNotNull()) {
+						//Debug.LogFormat("GridManager GetNode Null x {0:F}, y {1:F}", vec.x.ToFloat(), vec.y.ToFloat());
+						node.AddObstacle();
 					}
-
-					node.AddObstacle();
+					#if DEBUG
+					if (m_bLog) {
+						Debug.Log(vec.ToString());
+					}
+					#endif
 				}
 			}
 		}

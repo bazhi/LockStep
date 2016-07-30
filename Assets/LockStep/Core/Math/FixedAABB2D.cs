@@ -3,16 +3,15 @@ using System.Collections;
 
 namespace Lockstep
 {
-	[System.Serializable]
 	public class FixedAABB2D
 	{
-		[HideInInspector, FixedNumber]
+		[FixedNumber]
 		public long XMin;
-		[HideInInspector, FixedNumber]
+		[FixedNumber]
 		public long XMax;
-		[HideInInspector, FixedNumber]
+		[FixedNumber]
 		public long YMin;
-		[HideInInspector, FixedNumber]
+		[FixedNumber]
 		public long YMax;
 
 		public Vector2d m_Center = Vector2d.one;
@@ -98,6 +97,11 @@ namespace Lockstep
 			} else {
 				return false;
 			}
+		}
+
+		public override string ToString()
+		{
+			return string.Format("min({0:F},{1:F}), max({2:F},{3:F})", XMin.ToFloat(), YMin.ToFloat(), XMax.ToFloat(), YMax.ToFloat());
 		}
 	}
 }

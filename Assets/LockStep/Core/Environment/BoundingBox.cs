@@ -13,6 +13,7 @@ namespace Lockstep.Mono
 		Polygon
 	}
 
+	[RequireComponent(typeof(Collider))]
 	public sealed partial class BoundingBox : MonoBehaviour
 	{
 		//[SerializeField, FormerlySerializedAs("Shape")]
@@ -22,7 +23,7 @@ namespace Lockstep.Mono
 		[HideInInspector]
 		public Bounds m_Bound;
 
-		private FixedAABB2D m_AABB = new FixedAABB2D(Vector2d.zero, 0, 0);
+		public FixedAABB2D m_AABB = new FixedAABB2D(Vector2d.zero, 0, 0);
 
 		public void Initialize()
 		{
@@ -62,7 +63,7 @@ namespace Lockstep.Mono
 			long xmin = GetFlooredSnap(m_AABB.XMin - FixedMath.Half, snapSpacing);
 			long ymin = GetFlooredSnap(m_AABB.YMin - FixedMath.Half, snapSpacing);
 
-			long xmax = GetCeiledSnap(m_AABB.YMax + FixedMath.Half - xmin, snapSpacing) + xmin;
+			long xmax = GetCeiledSnap(m_AABB.XMax + FixedMath.Half - xmin, snapSpacing) + xmin;
 			long ymax = GetCeiledSnap(m_AABB.YMax + FixedMath.Half - ymin, snapSpacing) + ymin;
 			//Debug.LogFormat("XMin{0:F}, YMin{1:F}, XMax{2:F}, YMax{3:F}", m_AABB.XMin.ToFloat(), m_AABB.YMin.ToFloat(), m_AABB.XMax.ToFloat(), m_AABB.YMax.ToFloat());
 			//Debug.LogFormat("xmin{0:F}, ymin{1:F}, xmax{2:F}, ymax{3:F}", xmin.ToFloat(), ymin.ToFloat(), xmax.ToFloat(), ymax.ToFloat());
