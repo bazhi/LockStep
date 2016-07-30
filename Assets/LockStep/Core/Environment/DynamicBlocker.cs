@@ -12,9 +12,21 @@ namespace Lockstep.Mono
 
 		FastList<GridNode> LastCoordinates = new FastList<GridNode>();
 
+		public void Start()
+		{
+			GameManager.Instance.AddDynamicBlocker(this);
+		}
+
+		public void OnDestroy()
+		{
+			RemoveLastCoordinates();
+			GameManager.Instance.RemoveDynamicBlocker(this);
+		}
+
 		protected override void OnInitialize()
 		{
-
+			CachedBody = GetComponent<BoundingBox>();
+			CachedBody.Initialize();
 		}
 
 		public void RemoveAllCoordinates()
@@ -32,7 +44,6 @@ namespace Lockstep.Mono
 				node.AddObstacle();
 			}
 		}
-
 
 		private void RemoveLastCoordinates()
 		{
@@ -65,7 +76,6 @@ namespace Lockstep.Mono
 		protected override void OnLateInitialize()
 		{
 			base.OnLateInitialize();
-			CachedBody = GetComponent<BoundingBox>();
 			UpdateCoordinates();
 		}
 

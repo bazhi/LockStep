@@ -12,13 +12,18 @@ public class FllowTarget : MonoBehaviour
 	void Start()
 	{
 		mainCamera = Camera.main;
-		Gap = mainCamera.transform.position - character.position;
+		if (character) {
+			Gap = mainCamera.transform.position - character.position;
+		}
+
 	}
 	
 	// Update is called once per frame
 	void Update()
 	{
-		transform.position = Vector3.SmoothDamp(transform.position, character.position + Gap, ref cameraVelocity, smootTime);
+		if (character) {
+			transform.position = Vector3.SmoothDamp(transform.position, character.position + Gap, ref cameraVelocity, smootTime);
+		}
 	}
 }
 

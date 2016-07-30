@@ -2,6 +2,7 @@
 using System.Collections;
 using Lockstep.Mono;
 using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace Lockstep
 {
@@ -9,21 +10,17 @@ namespace Lockstep
 	{
 		public static GameManager Instance { get; private set; }
 
-		public GameObject m_SaverObject;
-		public GameObject m_MapObject;
-
 		[HideInInspector]
 		public EnvironmentSaver[] m_Savers;
 		[HideInInspector]
-		public BoundingBox[] m_Boundings;
-		[HideInInspector]
 		public Blocker[] m_Blockers;
 
-		[HideInInspector]
-		public DynamicBlocker[] m_DynamicBlockers;
+		private Dictionary<DynamicBlocker, DynamicBlocker> m_DynamicBlockers = new Dictionary<DynamicBlocker, DynamicBlocker>();
 
-		protected void Start()
+		void Awake()
 		{
+			Instance = this;
+
 			foreach (var save in m_Savers) {
 				save.Save();
 			}
@@ -31,47 +28,44 @@ namespace Lockstep
 			foreach (var save in m_Savers) {
 				save.Apply();
 			}
-
-			Instance = this;
 			LockstepManager.Initialize(this);
+		}
 
-			foreach (var box in m_Boundings) {
-				box.Initialize();
-			}
-
+		protected void Start()
+		{
 			foreach (var obj in m_Blockers) {
-				obj.Initialize();
-			}
-
-			foreach (var obj in m_DynamicBlockers) {
 				obj.Initialize();
 			}
 
 			foreach (var obj in m_Blockers) {
 				obj.LateInitialize();
 			}
+		}
 
-			foreach (var obj in m_DynamicBlockers) {
-				obj.LateInitialize();
-			}
+		public void AddDynamicBlocker(DynamicBlocker blocker)
+		{
+			m_DynamicBlockers.Add(blocker, blocker);
+			blocker.Initialize();
+			blocker.LateInitialize();
+		}
+
+		public void RemoveDynamicBlocker(DynamicBlocker blocker)
+		{
+			m_DynamicBlockers.Remove(blocker);
 		}
 
 		public void LoadSavers()
 		{
-			if (m_SaverObject.IsNotNull()) {
-				m_Savers = m_SaverObject.GetComponents<EnvironmentSaver>();
-			}
-			if (m_MapObject.IsNotNull()) {
-				m_Boundings = m_MapObject.GetComponentsInChildren<BoundingBox>();
-				m_Blockers = m_MapObject.GetComponentsInChildren<Blocker>();
-				m_DynamicBlockers = m_MapObject.GetComponentsInChildren<DynamicBlocker>();
-			}
+			m_Savers = Object.FindObjectsOfType<EnvironmentSaver>();
+			m_Blockers = Object.FindObjectsOfType<Blocker>();
+			UnityEngine.Debug.LogFormat("LoadSavers Success Savers({0:D}), Blockers({1:D})",
+				m_Savers.Length, m_Blockers.Length);
 		}
 
 		public void FixedUpdate()
 		{
-			foreach (var obj in m_DynamicBlockers) {
-				obj.Simulate();
+			foreach (var item in m_DynamicBlockers) {
+				item.Value.Simulate();
 			}
 		}
 	}

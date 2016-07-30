@@ -16,14 +16,15 @@ namespace Lockstep.Mono
 
 		protected override void OnInitialize()
 		{
-
+			CachedBody = GetComponent<BoundingBox>();
+			CachedBody.Initialize();
 		}
 
 
 		protected override void OnLateInitialize()
 		{
 			base.OnLateInitialize();
-			CachedBody = GetComponent<BoundingBox>();
+
 			if (CachedBody.IsNotNull()) {
 				bufferCoordinates.FastClear();
 				CachedBody.GetCoveredSnappedPositions(GridManager.Spacing, bufferCoordinates);

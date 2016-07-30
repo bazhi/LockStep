@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Net;
 using Lockstep.Mono;
+using UnityEngine.Networking;
 
 namespace Lockstep
 {
@@ -29,15 +30,20 @@ namespace Lockstep
 
 		DynamicBlocker m_Blocker;
 		private int m_SearchCount = 0;
+		private NetworkIdentity m_NetID;
 		// Use this for initialization
 		void Start()
 		{
 			m_Blocker = GetComponent<DynamicBlocker>();
 			Messenger.AddListener<Vector3>(EventCmd.CMD_ChangeDestination, OnChangeDestination);
+			m_NetID = GetComponent<NetworkIdentity>();
 		}
 
 		void OnChangeDestination(Vector3 target)
 		{
+			if (m_NetID && !m_NetID.isLocalPlayer) {
+				return;
+			}
 			m_Destination = target;
 			m_bArrived = false;
 			m_bFindPath = false;
