@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEngine.Serialization;
 using System.ComponentModel;
+using System;
 
 namespace Lockstep.Mono
 {
@@ -45,12 +46,15 @@ namespace Lockstep.Mono
 			Collider col = GetComponent<Collider>();
 			if (col) {
 				m_Bound = col.bounds;
-			}
-		}
 
-		public void BuildBounds()
-		{
-			
+				Type type = col.GetType();
+
+				if (type == typeof(SphereCollider) || type == typeof(CapsuleCollider)) {
+					Shape = BoundingType.Circle;
+				} else {
+					Shape = BoundingType.AABox;
+				}
+			}
 		}
 
 		public void UpdateValues()
@@ -74,9 +78,6 @@ namespace Lockstep.Mono
 
 					if (IsPositionCovered(checkPos)) {
 						output.Add(checkPos);
-						//Debug.Log(checkPos.ToString());
-					} else {
-						//Debug.Log(checkPos.ToString() + "unAdd");
 					}
 				}
 			}
@@ -86,10 +87,11 @@ namespace Lockstep.Mono
 		{
 			switch (this.Shape) {
 				case BoundingType.Circle:
-//					long maxDistance = this._radius + FixedMath.Half;
-//					maxDistance *= maxDistance;
-//					if ((_position - position).FastMagnitude() > maxDistance)
-//						return false;
+					var radis = Math.Max(m_AABB.m_HalfX, m_AABB.m_HalfY);
+					long maxDistance = radis + FixedMath.Half;
+					maxDistance *= maxDistance;
+					if ((m_AABB.m_Center - position).FastMagnitude() > maxDistance)
+						return false;
 					goto case BoundingType.AABox;
 				case BoundingType.AABox:
 					return m_AABB.intersect(position, FixedMath.Half, FixedMath.Half);
@@ -106,7 +108,7 @@ namespace Lockstep.Mono
 			AutoSet();
 			switch (this.Shape) {
 				case BoundingType.Circle:
-					//Gizmos.DrawWireSphere(this.transform.position, this.Radius);
+					Gizmos.DrawWireSphere(m_Bound.center, Math.Max(m_Bound.size.x, m_Bound.size.z) / 2);
 					break;
 				case BoundingType.AABox:
 					Gizmos.DrawWireCube(m_Bound.center, m_Bound.size);
