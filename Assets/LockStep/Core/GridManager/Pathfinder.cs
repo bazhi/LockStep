@@ -58,9 +58,11 @@ namespace Lockstep
 			if (!GetPathNodes(Start.x, Start.y, End.x, End.y, out node1, out node2, out canAddEnd))
 				return false;
 			if (!NeedsPath(node1, node2, unitSize)) {
-				outputVectorPath.Add(node2.WorldPos);
+				
 				if (canAddEnd) {
 					outputVectorPath.Add(End);
+				} else {
+					outputVectorPath.Add(node2.WorldPos);
 				}
 				return true;
 			}
@@ -73,6 +75,8 @@ namespace Lockstep
 				}
 				if (canAddEnd) {
 					outputVectorPath.Add(End);
+				} else {
+					outputVectorPath.Add(node2.WorldPos);
 				}
 				return true;
 			}
@@ -239,7 +243,6 @@ namespace Lockstep
 					oldY = newY;
 				}
 			}
-			outputPath.Add(endNode);
 		}
 
 		public static bool NeedsPath(GridNode startNode, GridNode endNode, int unitSize)

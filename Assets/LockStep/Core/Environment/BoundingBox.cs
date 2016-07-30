@@ -19,7 +19,7 @@ namespace Lockstep.Mono
 		private BoundingType Shape = BoundingType.AABox;
 
 		//public BoundingType Shape { get { return _shape; } }
-
+		[HideInInspector]
 		public Bounds m_Bound;
 
 		private FixedAABB2D m_AABB = new FixedAABB2D(Vector2d.zero, 0, 0);
@@ -41,8 +41,8 @@ namespace Lockstep.Mono
 
 		public void AutoSet()
 		{
-			Collider[] cols = GetComponentsInChildren <Collider>();
-			foreach (var col in cols) {
+			Collider col = GetComponent<Collider>();
+			if (col) {
 				m_Bound = col.bounds;
 			}
 		}
@@ -98,22 +98,24 @@ namespace Lockstep.Mono
 
 			return false;
 		}
-
+		#if UNITY_EDITOR
 		void OnDrawGizmos()
 		{
 			Gizmos.color = Color.red;
+			AutoSet();
 			switch (this.Shape) {
 				case BoundingType.Circle:
 					//Gizmos.DrawWireSphere(this.transform.position, this.Radius);
 					break;
 				case BoundingType.AABox:
-					Gizmos.DrawWireCube(transform.position, m_Bound.size);
+					Gizmos.DrawWireCube(m_Bound.center, m_Bound.size);
 					break;
 				case BoundingType.Polygon:
 					//Gizmos.DrawWireSphere(this.transform.position, this.Radius);
 					break;
 			}
 		}
+		#endif
 	}
 }
 
