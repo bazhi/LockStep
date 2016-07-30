@@ -8,7 +8,7 @@ namespace Lockstep
 	{
 		private readonly Dictionary<T2,T1> _reverseMap = new Dictionary<T2, T1>();
 
-		public void Add(T1 item1, T2 item2)
+		public void BAdd(T1 item1, T2 item2)
 		{
 			base.Add(item1, item2);
 			_reverseMap.Add(item2, item1);

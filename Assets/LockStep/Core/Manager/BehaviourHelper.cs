@@ -8,8 +8,8 @@ namespace Lockstep
 {
 	public abstract class BehaviourHelper : MonoBehaviour
 	{
-		private static FastList<BehaviourHelper> behaviourHelpers = new FastList<BehaviourHelper>();
-		private static HashSet<Type> createdTypes = new HashSet<Type>();
+		//private static FastList<BehaviourHelper> behaviourHelpers = new FastList<BehaviourHelper>();
+		//private static HashSet<Type> createdTypes = new HashSet<Type>();
 
 		public ushort CachedListenInput { get; private set; }
 
