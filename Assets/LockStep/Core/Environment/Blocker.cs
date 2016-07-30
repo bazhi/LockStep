@@ -12,7 +12,7 @@ namespace Lockstep.Mono
 
 		protected override void OnInitialize()
 		{
-			gameObject.isStatic = true;
+
 		}
 
 
@@ -26,7 +26,6 @@ namespace Lockstep.Mono
 				foreach (Vector2d vec in bufferCoordinates) {
 					GridNode node = GridManager.GetNode(vec.x, vec.y);
 					if (node == null) {
-						Debug.Log("GridManager getNode Null");
 						continue;
 					}
 

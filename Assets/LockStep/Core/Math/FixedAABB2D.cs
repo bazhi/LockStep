@@ -21,7 +21,12 @@ namespace Lockstep
 		[FixedNumber]
 		public long m_HalfY;
 
-		private void init (Vector2d center, long halfx, long halfy)
+		public FixedAABB2D()
+		{
+
+		}
+
+		private void init(Vector2d center, long halfx, long halfy)
 		{
 			XMin = center.x - halfx;
 			XMax = center.x + halfx;
@@ -29,46 +34,46 @@ namespace Lockstep
 			YMax = center.y + halfy;
 		}
 
-		public FixedAABB2D (Vector2d center, long halfx, long halfy)
+		public FixedAABB2D(Vector2d center, long halfx, long halfy)
 		{
 			m_Center = center;
 			m_HalfX = halfx;
 			m_HalfY = halfy;
-			init (center, halfx, halfy);
+			init(center, halfx, halfy);
 		}
 
-		public FixedAABB2D (Vector2 center, float halfx, float halfy)
+		public FixedAABB2D(Vector2 center, float halfx, float halfy)
 		{
-			update (center, halfx, halfy);
+			update(center, halfx, halfy);
 		}
 
-		public void update (Vector2 center, float halfx, float halfy)
+		public void update(Vector2 center, float halfx, float halfy)
 		{
-			update (center.x, center.y, halfx, halfy);
+			update(center.x, center.y, halfx, halfy);
 		}
 
-		public void update (float x, float y, float halfx, float halfy)
+		public void update(float x, float y, float halfx, float halfy)
 		{
-			m_Center.x = FixedMath.Create (x);
-			m_Center.y = FixedMath.Create (y);
-			m_HalfX = FixedMath.Create (halfx);
-			m_HalfY = FixedMath.Create (halfy);
-			init (m_Center, m_HalfX, m_HalfY);
+			m_Center.x = FixedMath.Create(x);
+			m_Center.y = FixedMath.Create(y);
+			m_HalfX = FixedMath.Create(halfx);
+			m_HalfY = FixedMath.Create(halfy);
+			init(m_Center, m_HalfX, m_HalfY);
 		}
 
-		public void update (float x, float y)
+		public void update(float x, float y)
 		{
-			m_Center.x = FixedMath.Create (x);
-			m_Center.y = FixedMath.Create (y);
-			init (m_Center, m_HalfX, m_HalfY);
+			m_Center.x = FixedMath.Create(x);
+			m_Center.y = FixedMath.Create(y);
+			init(m_Center, m_HalfX, m_HalfY);
 		}
 
-		public void update (Vector2 center)
+		public void update(Vector2 center)
 		{
-			update (center.x, center.y);
+			update(center.x, center.y);
 		}
 
-		public bool contains (Vector2d p)
+		public bool contains(Vector2d p)
 		{
 			if (XMin <= p.x && p.x <= XMax && YMin <= p.y && p.y <= YMax) {
 				return true;
@@ -77,7 +82,7 @@ namespace Lockstep
 			}
 		}
 
-		public bool intersect (Vector2d center, long halfx, long halfy)
+		public bool intersect(Vector2d center, long halfx, long halfy)
 		{
 			if (center.x + halfx >= XMin && center.x - halfx <= XMax && center.y + halfy >= YMin && center.y - halfy <= YMax) {
 				return true;
@@ -86,7 +91,7 @@ namespace Lockstep
 			}
 		}
 
-		public bool intersect (FixedAABB2D aabb)
+		public bool intersect(FixedAABB2D aabb)
 		{
 			if (aabb.XMax >= aabb.XMin && aabb.XMin <= XMax && aabb.YMax >= YMin && aabb.YMin <= YMax) {
 				return true;

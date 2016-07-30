@@ -15,97 +15,64 @@ namespace Lockstep.Mono
 
 	public sealed partial class BoundingBox : MonoBehaviour
 	{
-		[SerializeField, FormerlySerializedAs ("Shape")]
-		private BoundingType _shape = BoundingType.AABox;
+		//[SerializeField, FormerlySerializedAs("Shape")]
+		private BoundingType Shape = BoundingType.AABox;
 
-		public BoundingType Shape { get { return _shape; } }
+		//public BoundingType Shape { get { return _shape; } }
 
-		private long _radius = FixedMath.Half;
-		private Vector3d _ABSize = new Vector3d (Vector3.one);
+		public Bounds m_Bound;
 
-		public float Radius = 1.0f;
-		public Vector3 ABSize = Vector3.one;
+		private FixedAABB2D m_AABB = new FixedAABB2D(Vector2d.zero, 0, 0);
 
-		public FixedAABB2D m_AABB;
-
-		public long XMin { get; private set; }
-
-		public long XMax { get; private set; }
-
-		public long YMin { get; private set; }
-
-		public long YMax { get; private set; }
-
-		private Vector2d _position;
-
-		public void Initialize ()
+		public void Initialize()
 		{
-			_position = new Vector2d (transform.position.x, transform.position.z);
-			_radius = FixedMath.Create (Radius);
-			_ABSize.x = FixedMath.Create (ABSize.x);
-			_ABSize.z = FixedMath.Create (ABSize.z);
-			BuildBounds ();
+			m_AABB.update(m_Bound.center.x, m_Bound.center.z, m_Bound.extents.x, m_Bound.extents.z);
 		}
 
-		long GetCeiledSnap (long f, long snap)
+		long GetCeiledSnap(long f, long snap)
 		{
 			return (f + snap - 1) / snap * snap;
 		}
 
-		long GetFlooredSnap (long f, long snap)
+		long GetFlooredSnap(long f, long snap)
 		{
 			return (f / snap) * snap;
 		}
 
-		public void AutoSet ()
+		public void AutoSet()
 		{
-			Collider[] cols = GetComponentsInChildren <Collider> ();
+			Collider[] cols = GetComponentsInChildren <Collider>();
 			foreach (var col in cols) {
-				Debug.Log (col.bounds.ToString ());
-				m_AABB.update (col.bounds.center.x, col.bounds.center.y, col.bounds.extents.x, col.bounds.extents.z);
+				m_Bound = col.bounds;
 			}
 		}
 
-		public void BuildBounds ()
+		public void BuildBounds()
 		{
-			if (Shape == BoundingType.Circle) {
-				XMin = -_radius + _position.x;
-				XMax = _radius + _position.x;
-				YMin = -_radius + _position.y;
-				YMax = _radius + _position.y;
-			} else if (Shape == BoundingType.AABox) {
-				XMin = -_ABSize.x / 2 + _position.x;
-				XMax = _ABSize.x / 2 + _position.x;
-				YMin = -_ABSize.z / 2 + _position.y;
-				YMax = _ABSize.z / 2 + _position.y;
-			} else if (Shape == BoundingType.Polygon) {
-
-			}
+			
 		}
 
-		public void UpdateValues ()
+		public void UpdateValues()
 		{
-			_position = new Vector2d (transform.position.x, transform.position.z);
-			BuildBounds ();
-			m_AABB.update (transform.position.x, transform.position.z);
+			m_AABB.update(transform.position.x, transform.position.z);
 		}
 
-		public void GetCoveredSnappedPositions (long snapSpacing, FastList<Vector2d> output)
+		public void GetCoveredSnappedPositions(long snapSpacing, FastList<Vector2d> output)
 		{
-			long xmin = GetFlooredSnap (this.XMin - FixedMath.Half, snapSpacing);
-			long ymin = GetFlooredSnap (this.YMin - FixedMath.Half, snapSpacing);
+			long xmin = GetFlooredSnap(m_AABB.XMin - FixedMath.Half, snapSpacing);
+			long ymin = GetFlooredSnap(m_AABB.YMin - FixedMath.Half, snapSpacing);
 
-			long xmax = GetCeiledSnap (this.XMax + FixedMath.Half - xmin, snapSpacing) + xmin;
-			long ymax = GetCeiledSnap (this.YMax + FixedMath.Half - ymin, snapSpacing) + ymin;
-			//Debug.LogFormat("xmin{0:F}, ymin{1:F}, xmax{2:F}, ymax{3:F}", XMin.ToFloat(), YMin.ToFloat(), XMax.ToFloat(), YMax.ToFloat());
+			long xmax = GetCeiledSnap(m_AABB.YMax + FixedMath.Half - xmin, snapSpacing) + xmin;
+			long ymax = GetCeiledSnap(m_AABB.YMax + FixedMath.Half - ymin, snapSpacing) + ymin;
+			//Debug.LogFormat("XMin{0:F}, YMin{1:F}, XMax{2:F}, YMax{3:F}", m_AABB.XMin.ToFloat(), m_AABB.YMin.ToFloat(), m_AABB.XMax.ToFloat(), m_AABB.YMax.ToFloat());
 			//Debug.LogFormat("xmin{0:F}, ymin{1:F}, xmax{2:F}, ymax{3:F}", xmin.ToFloat(), ymin.ToFloat(), xmax.ToFloat(), ymax.ToFloat());
 			//Used for getting snapped positions this body covered
 			for (long x = xmin; x < xmax; x += snapSpacing) {
 				for (long y = ymin; y < ymax; y += snapSpacing) {
-					Vector2d checkPos = new Vector2d (x, y);
+					Vector2d checkPos = new Vector2d(x, y);
 
-					if (IsPositionCovered (checkPos)) {
-						output.Add (checkPos);
+					if (IsPositionCovered(checkPos)) {
+						output.Add(checkPos);
 						//Debug.Log(checkPos.ToString());
 					} else {
 						//Debug.Log(checkPos.ToString() + "unAdd");
@@ -114,38 +81,37 @@ namespace Lockstep.Mono
 			}
 		}
 
-		public bool IsPositionCovered (Vector2d position)
+		public bool IsPositionCovered(Vector2d position)
 		{
 			switch (this.Shape) {
-			case BoundingType.Circle:
-				long maxDistance = this._radius + FixedMath.Half;
-				maxDistance *= maxDistance;
-				if ((_position - position).FastMagnitude () > maxDistance)
-					return false;
-				goto case BoundingType.AABox;
-			case BoundingType.AABox:
-				return position.x + FixedMath.Half >= this.XMin && position.x - FixedMath.Half <= this.XMax
-				&& position.y + FixedMath.Half >= this.YMin && position.y - FixedMath.Half <= this.YMax;
-			case BoundingType.Polygon:
-				break;
+				case BoundingType.Circle:
+//					long maxDistance = this._radius + FixedMath.Half;
+//					maxDistance *= maxDistance;
+//					if ((_position - position).FastMagnitude() > maxDistance)
+//						return false;
+					goto case BoundingType.AABox;
+				case BoundingType.AABox:
+					return m_AABB.intersect(position, FixedMath.Half, FixedMath.Half);
+				case BoundingType.Polygon:
+					break;
 			}
 
 			return false;
 		}
 
-		void OnDrawGizmos ()
+		void OnDrawGizmos()
 		{
 			Gizmos.color = Color.red;
 			switch (this.Shape) {
-			case BoundingType.Circle:
-				Gizmos.DrawWireSphere (this.transform.position, this.Radius);
-				break;
-			case BoundingType.AABox:
-				Gizmos.DrawWireCube (this.transform.position, ABSize);
-				break;
-			case BoundingType.Polygon:
-				Gizmos.DrawWireSphere (this.transform.position, this.Radius);
-				break;
+				case BoundingType.Circle:
+					//Gizmos.DrawWireSphere(this.transform.position, this.Radius);
+					break;
+				case BoundingType.AABox:
+					Gizmos.DrawWireCube(transform.position, m_Bound.size);
+					break;
+				case BoundingType.Polygon:
+					//Gizmos.DrawWireSphere(this.transform.position, this.Radius);
+					break;
 			}
 		}
 	}

@@ -54,10 +54,14 @@ namespace Lockstep
 
 		public static bool FindPath(Vector2d Start, Vector2d End, FastList<Vector2d> outputVectorPath, int unitSize = 1)
 		{
-			if (!GetPathNodes(Start.x, Start.y, End.x, End.y, out node1, out node2))
+			bool canAddEnd = false;
+			if (!GetPathNodes(Start.x, Start.y, End.x, End.y, out node1, out node2, out canAddEnd))
 				return false;
 			if (!NeedsPath(node1, node2, unitSize)) {
 				outputVectorPath.Add(node2.WorldPos);
+				if (canAddEnd) {
+					outputVectorPath.Add(End);
+				}
 				return true;
 			}
 
@@ -67,7 +71,9 @@ namespace Lockstep
 				for (i = 0; i < length; i++) {
 					outputVectorPath.Add(OutputPath[i].WorldPos);
 				}
-				outputVectorPath.Add(End);
+				if (canAddEnd) {
+					outputVectorPath.Add(End);
+				}
 				return true;
 			}
 			return false;
@@ -216,7 +222,6 @@ namespace Lockstep
 				TracePath.Add(currentNode);
 				oldNode = currentNode;
 				currentNode = currentNode.parent;
-
 			}
 
 			oldX = 0;
@@ -228,17 +233,13 @@ namespace Lockstep
 				newX = currentNode.gridX - oldNode.gridX;
 				newY = currentNode.gridY - oldNode.gridY;
 				//Debug.LogFormat("C X:{0:D}, Y:{1:D}", currentNode.gridX, currentNode.gridY);
-				#if true
 				if (newX != oldX || newY != oldY) {
 					outputPath.Add(oldNode);
 					oldX = newX;
 					oldY = newY;
 				}
-
-				#else
-				outputPath.Add(currentNode);
-				#endif
 			}
+			outputPath.Add(endNode);
 		}
 
 		public static bool NeedsPath(GridNode startNode, GridNode endNode, int unitSize)
@@ -304,8 +305,9 @@ namespace Lockstep
 			return true;
 		}
 
-		public static bool GetPathNodes(long StartX, long StartY, long EndX, long EndY, out GridNode startNode, out GridNode endNode)
+		public static bool GetPathNodes(long StartX, long StartY, long EndX, long EndY, out GridNode startNode, out GridNode endNode, out bool endWalkable)
 		{
+			endWalkable = false;
 			startNode = GridManager.GetNode(StartX, StartY);
 			if (startNode.IsNull()) {
 				endNode = null;
@@ -338,6 +340,8 @@ namespace Lockstep
 				}
 				if (endNode.Unwalkable)
 					return false;
+			} else {
+				endWalkable = true;
 			}
 			return true;
 		}
