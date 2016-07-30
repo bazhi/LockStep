@@ -28,7 +28,7 @@ namespace Lockstep
 		float m_CurDis = 0.0f;
 
 		DynamicBlocker m_Blocker;
-
+		private int m_SearchCount = 0;
 		// Use this for initialization
 		void Start()
 		{
@@ -42,11 +42,20 @@ namespace Lockstep
 			m_bArrived = false;
 			m_bFindPath = false;
 			m_MyPath.FastClear();
+			m_SearchCount = 0;
+		}
+
+		public void OnCollisionEnter(Collision col)
+		{
+			m_bFindPath = false;
+			if (m_SearchCount >= 5) {
+				m_bArrived = true;
+			}
 		}
 
 		void Update()
 		{
-			if (!m_bArrived) {
+			if (!m_bArrived && m_bFindPath) {
 				m_CurDis = Vector2.Distance(transform.position, m_TargetPos);
 				if (m_CurDis >= m_LastDis) {
 					m_bArrivedMiddle = true;
@@ -71,6 +80,7 @@ namespace Lockstep
 					if (m_Blocker) {
 						m_Blocker.RemoveAllCoordinates();
 					}
+					++m_SearchCount;
 					if (Pathfinder.FindPath(StartPos, EndPos, m_MyPath)) {
 						m_Index = 0;
 						m_bFindPath = true;
@@ -108,7 +118,6 @@ namespace Lockstep
 			if (!Show)
 				return;
 			
-
 			if (Application.isPlaying && m_bFindPath) {
 				Gizmos.color = Color.red;
 				int count = m_MyPath.Count;
