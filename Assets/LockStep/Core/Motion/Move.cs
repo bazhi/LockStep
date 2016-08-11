@@ -7,7 +7,7 @@ using UnityEngine.Networking;
 namespace Lockstep
 {
 	[RequireComponent(typeof(DynamicBlocker))]
-	public class Move : NetworkBehaviour
+	public class Move : MonoBehaviour
 	{
 		private Vector3 m_Destination;
 		private bool m_bArrived = true;
@@ -30,30 +30,18 @@ namespace Lockstep
 
 		DynamicBlocker m_Blocker;
 		private int m_SearchCount = 0;
-
-		//UNet
-		public GameObject bulletPrefab;
-
+		private NetworkIdentity m_NetID;
 		// Use this for initialization
 		void Start()
 		{
 			m_Blocker = GetComponent<DynamicBlocker>();
 			Messenger.AddListener<Vector3>(EventCmd.CMD_ChangeDestination, OnChangeDestination);
-		}
-
-		void OnDestroy()
-		{
-			Messenger.RemoveListener<Vector3>(EventCmd.CMD_ChangeDestination, OnChangeDestination);
-		}
-
-		public override void OnStartLocalPlayer()
-		{
-			GetComponent<MeshRenderer>().material.color = Color.white;
+			m_NetID = GetComponent<NetworkIdentity>();
 		}
 
 		void OnChangeDestination(Vector3 target)
 		{
-			if (!isLocalPlayer) {
+			if (m_NetID && !m_NetID.isLocalPlayer) {
 				return;
 			}
 			m_Destination = target;
@@ -71,29 +59,8 @@ namespace Lockstep
 			}
 		}
 
-		[Command]
-		void CmdFire()
-		{
-			var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-			RaycastHit hit; 
-			if (Physics.Raycast(ray, out hit, 1000.0f)) {
-				transform.LookAt(new Vector3(hit.point.x, transform.position.y, hit.point.z));
-			}
-
-			var bullet = (GameObject)Instantiate(
-				             bulletPrefab,
-				             transform.position + transform.forward,
-				             Quaternion.identity
-			             );
-			bullet.GetComponent<Rigidbody>().velocity = transform.forward * 10;
-			NetworkServer.Spawn(bullet);
-			Destroy(bullet, 2.0f);
-		}
-
 		void Update()
 		{
-			if (!isLocalPlayer)
-				return;
 			if (!m_bArrived && m_bFindPath) {
 				m_CurDis = Vector2.Distance(transform.position, m_TargetPos);
 				if (m_CurDis >= m_LastDis) {
@@ -105,10 +72,6 @@ namespace Lockstep
 					transform.Translate(m_Forward * m_Speed * Time.deltaTime);
 					m_LastDis = m_CurDis;
 				}
-			}
-
-			if (Input.GetKeyDown(KeyCode.Space)) {
-				CmdFire();
 			}
 		}
 	
@@ -145,7 +108,6 @@ namespace Lockstep
 							m_bArrivedMiddle = false;
 							m_TargetPos = m_Target.ToVector3(transform.position.y);
 							transform.LookAt(m_TargetPos);
-							//GetComponent<Rigidbody>().velocity = transform.forward * 10;
 							m_CurDis = Vector2.Distance(transform.position, m_TargetPos);
 							m_LastDis = m_CurDis + 1.0f;
 						}

@@ -11,26 +11,24 @@ namespace Lockstep.Mono
 		None,
 		Circle,
 		AABox,
-		OBB
+		Polygon
 	}
 
 	[RequireComponent(typeof(Collider))]
 	public sealed partial class BoundingBox : MonoBehaviour
 	{
 		//[SerializeField, FormerlySerializedAs("Shape")]
-		public BoundingType Shape = BoundingType.AABox;
+		private BoundingType Shape = BoundingType.AABox;
 
 		//public BoundingType Shape { get { return _shape; } }
-		public BBBuilder m_BBBuilder = new BBBuilder();
+		[HideInInspector]
+		public Bounds m_Bound;
 
 		public FixedAABB2D m_AABB = new FixedAABB2D(Vector2d.zero, 0, 0);
-		public FixedOBB2D m_OBB = new FixedOBB2D();
-
-		public bool m_bMove = false;
 
 		public void Initialize()
 		{
-			UpdateValues();
+			m_AABB.update(m_Bound.center.x, m_Bound.center.z, m_Bound.extents.x, m_Bound.extents.z);
 		}
 
 		long GetCeiledSnap(long f, long snap)
@@ -47,82 +45,41 @@ namespace Lockstep.Mono
 		{
 			Collider col = GetComponent<Collider>();
 			if (col) {
+				m_Bound = col.bounds;
+
 				Type type = col.GetType();
-				if (type == typeof(SphereCollider)) {
+
+				if (type == typeof(SphereCollider) || type == typeof(CapsuleCollider)) {
 					Shape = BoundingType.Circle;
-					GetComponent<SphereCollider>().getOBBB(ref m_BBBuilder);
-				} else if (type == typeof(CapsuleCollider)) {
-					Shape = BoundingType.Circle;
-					GetComponent<CapsuleCollider>().getOBBB(ref m_BBBuilder);
-				} else if (type == typeof(BoxCollider)) {
-					GetComponent<BoxCollider>().getOBBB(ref m_BBBuilder);
-					if (Math.Abs(m_BBBuilder.degreeY) < 0.1f) {
-						Shape = BoundingType.AABox;
-					} else {
-						Shape = BoundingType.OBB;
-					}
+				} else {
+					Shape = BoundingType.AABox;
 				}
 			}
-			UpdateValues();
 		}
 
 		public void UpdateValues()
 		{
-			if (Shape == BoundingType.OBB) {
-				m_BBBuilder.getOBB2D(ref m_OBB);
-			} else {
-				m_BBBuilder.getAABB2D(ref m_AABB);
-			}
-			if (m_bMove) {
-				m_AABB.update(transform.position.x, transform.position.z);
-			}
-		}
-
-		void GetCoveredSnappedPositionsAABB(long snapSpacing, FastList<Vector2d> output)
-		{
-			long xmin = GetFlooredSnap(m_AABB.m_Min.x - FixedMath.Half, snapSpacing);
-			long ymin = GetFlooredSnap(m_AABB.m_Min.y - FixedMath.Half, snapSpacing);
-
-			long xmax = GetCeiledSnap(m_AABB.m_Max.x + FixedMath.Half - xmin, snapSpacing) + xmin;
-			long ymax = GetCeiledSnap(m_AABB.m_Max.y + FixedMath.Half - ymin, snapSpacing) + ymin;
-			for (long x = xmin; x < xmax; x += snapSpacing) {
-				for (long y = ymin; y < ymax; y += snapSpacing) {
-					var checkPos = new Vector2d(x, y);
-
-					if (IsPositionCovered(checkPos)) {
-						output.Add(checkPos);
-					}
-				}
-			}
-		}
-
-		void GetCoveredSnappedPositionsOBB(long snapSpacing, FastList<Vector2d> output)
-		{
-			long xmin = GetFlooredSnap(m_OBB.m_Min.x - FixedMath.Half, snapSpacing);
-			long ymin = GetFlooredSnap(m_OBB.m_Min.y - FixedMath.Half, snapSpacing);
-
-			long xmax = GetCeiledSnap(m_OBB.m_Max.x + FixedMath.Half - xmin, snapSpacing) + xmin;
-			long ymax = GetCeiledSnap(m_OBB.m_Max.y + FixedMath.Half - ymin, snapSpacing) + ymin;
-			for (long x = xmin; x < xmax; x += snapSpacing) {
-				for (long y = ymin; y < ymax; y += snapSpacing) {
-					var checkPos = new Vector2d(x, y);
-
-					if (IsPositionCovered(checkPos)) {
-						output.Add(checkPos);
-					}
-				}
-			}
+			m_AABB.update(transform.position.x, transform.position.z);
 		}
 
 		public void GetCoveredSnappedPositions(long snapSpacing, FastList<Vector2d> output)
 		{
-			switch (this.Shape) {
-				case BoundingType.OBB:
-					GetCoveredSnappedPositionsOBB(snapSpacing, output);
-					break;
-				default:
-					GetCoveredSnappedPositionsAABB(snapSpacing, output);
-					break;
+			long xmin = GetFlooredSnap(m_AABB.XMin - FixedMath.Half, snapSpacing);
+			long ymin = GetFlooredSnap(m_AABB.YMin - FixedMath.Half, snapSpacing);
+
+			long xmax = GetCeiledSnap(m_AABB.XMax + FixedMath.Half - xmin, snapSpacing) + xmin;
+			long ymax = GetCeiledSnap(m_AABB.YMax + FixedMath.Half - ymin, snapSpacing) + ymin;
+			//Debug.LogFormat("XMin{0:F}, YMin{1:F}, XMax{2:F}, YMax{3:F}", m_AABB.XMin.ToFloat(), m_AABB.YMin.ToFloat(), m_AABB.XMax.ToFloat(), m_AABB.YMax.ToFloat());
+			//Debug.LogFormat("xmin{0:F}, ymin{1:F}, xmax{2:F}, ymax{3:F}", xmin.ToFloat(), ymin.ToFloat(), xmax.ToFloat(), ymax.ToFloat());
+			//Used for getting snapped positions this body covered
+			for (long x = xmin; x < xmax; x += snapSpacing) {
+				for (long y = ymin; y < ymax; y += snapSpacing) {
+					Vector2d checkPos = new Vector2d(x, y);
+
+					if (IsPositionCovered(checkPos)) {
+						output.Add(checkPos);
+					}
+				}
 			}
 		}
 
@@ -130,7 +87,7 @@ namespace Lockstep.Mono
 		{
 			switch (this.Shape) {
 				case BoundingType.Circle:
-					var radis = Math.Max(m_AABB.m_Half.x, m_AABB.m_Half.y);
+					var radis = Math.Max(m_AABB.m_HalfX, m_AABB.m_HalfY);
 					long maxDistance = radis + FixedMath.Half;
 					maxDistance *= maxDistance;
 					if ((m_AABB.m_Center - position).FastMagnitude() > maxDistance)
@@ -138,9 +95,8 @@ namespace Lockstep.Mono
 					goto case BoundingType.AABox;
 				case BoundingType.AABox:
 					return m_AABB.intersect(position, FixedMath.Half, FixedMath.Half);
-				case BoundingType.OBB:
-					var obb = new FixedOBB2D(position.x, position.y, FixedMath.Half, FixedMath.Half);
-					return m_OBB.isCollision(obb);
+				case BoundingType.Polygon:
+					break;
 			}
 
 			return false;
@@ -148,19 +104,17 @@ namespace Lockstep.Mono
 		#if UNITY_EDITOR
 		void OnDrawGizmos()
 		{
-			if (Application.isPlaying) {
-				return;
-			}
 			Gizmos.color = Color.red;
+			AutoSet();
 			switch (this.Shape) {
 				case BoundingType.Circle:
-					Gizmos.DrawWireSphere(m_BBBuilder.center, Math.Max(m_BBBuilder.size.x, m_BBBuilder.size.z) / 2);
+					Gizmos.DrawWireSphere(m_Bound.center, Math.Max(m_Bound.size.x, m_Bound.size.z) / 2);
 					break;
 				case BoundingType.AABox:
-					Gizmos.DrawWireCube(m_BBBuilder.center, m_BBBuilder.size);
+					Gizmos.DrawWireCube(m_Bound.center, m_Bound.size);
 					break;
-				case BoundingType.OBB:
-					m_BBBuilder.Draw();
+				case BoundingType.Polygon:
+					//Gizmos.DrawWireSphere(this.transform.position, this.Radius);
 					break;
 			}
 		}
