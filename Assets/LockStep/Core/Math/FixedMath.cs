@@ -14,7 +14,7 @@ namespace Lockstep
 		public const long Half = One / 2;
 		public const float OneF = (float)One;
 		public const double OneD = (double)One;
-		public const long Pi = (355 * One) / 113;
+		public const long Pi = (long)(Math.PI * One);
 		public const long TwoPi = Pi * 2;
 		public const long MaxFixedNumber = long.MaxValue >> SHIFT_AMOUNT;
 		public const long TenDegrees = FixedMath.One * 1736 / 10000;
